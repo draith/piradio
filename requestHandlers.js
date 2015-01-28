@@ -1,4 +1,6 @@
 var omx = require('omxcontrol');
+var fs = require('fs');
+var radioOn = true;
 
 function start(url, vol) {
   console.log("Request handler 'start' was called.");
@@ -10,5 +12,23 @@ function stop() {
   omx.stop(function() {});
 }
 
+function play(path) {
+	console.log("Request handler 'play' was called.");
+	omx.start(path, '', function() { } );
+}
+
+function playdir(path) {
+	console.log("Request handler 'playdir' was called.");
+	var files = fs.readdirSync(path);
+	for (i = 0; i < files.length; i++)
+	{
+		if (/\.mp3$/.test(files[i])) {
+			omx.start(path + '/' + files[i], '', function() { } );
+		}
+	}
+}
+
 exports.start = start;
 exports.stop = stop;
+exports.play = play;
+exports.playdir = playdir;
