@@ -20,11 +20,13 @@ function play(path) {
 function playdir(path) {
 	console.log("Request handler 'playdir' was called.");
 	var files = fs.readdirSync(path);
+	var plist = [];
 	for (i = 0; i < files.length; i++)
 	{
 		if (/\.mp3$/.test(files[i])) {
-			omx.start(path + '/' + files[i], '', function() { } );
+			plist[plist.length] = path + '/' + files[i];
 		}
+		omx.play_list(plist);
 	}
 }
 
