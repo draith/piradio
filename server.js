@@ -70,13 +70,18 @@ function start(route, handle) {
 	  }
 	  else return ""; 
   }
+  
+  function escaped(path)
+  {
+	  return path.replace(/([ '\(\)])/g, "\\$1");
+  }
 	// Request handler callback
   function onRequest(request, response) {
 	var requestURL = url.parse(request.url,true);
     var pathname = requestURL.pathname;
-    console.log("Request for path " + pathname + " received.");
+    //console.log("Request for path " + pathname + " received.");
     selectedIndex = requestURL.query.index;
-    console.log("index: ", requestURL.query.index );
+    //console.log("index: ", requestURL.query.index );
 	if (pathname == '/library') {
 		radio = false;
 	}
@@ -119,8 +124,9 @@ function start(route, handle) {
 		if (pathname == '/cd') {
 			musicpath = fs.realpathSync(musicpath + '/' + requestURL.query.dir);
 			// Get id3 tags
-			var cmd = "id3v2 -R " + musicpath.replace(/ /g, "\\ ") + "/*.mp3";
-			exec(cmd, { timeout: 1000 },
+			var cmd = "id3v2 -R " + escaped(musicpath) + "/*.mp3";
+			console.log('ID3 command ' + cmd);
+			exec(cmd, { timeout: 2000 },
 				function (error, stdout, stderr) {
 					// Get title tags for display
 					parseID3(stdout);
