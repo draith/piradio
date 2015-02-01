@@ -9,8 +9,45 @@ var stations = require("./stations");
 var musicpath = "/home/pi/Downloads/Music";
 var musicroot = musicpath;
 var radio = true;
+var child_process = require('child_process');
+var exec = child_process.exec;
+var trackNames = [];
+
+function parseID3(id3Output) {
+	var lines = id3Output.split('\n');
+	var filename = false;
+	trackNames = [];
+	var i;
+	for (i = 0; i < lines.length; i++)
+	{
+		if (/^Filename: /.test(lines[i]))
+		{
+			filename = lines[i].substr(10);
+		}
+		else if (filename && /^TIT2: /.test(lines[i]))
+		{
+			trackNames[filename] = lines[i].substr(6);
+		}
+	}
+}
 
 function start(route, handle) {
+	
+	function finishLibPage(response) {
+		var files = fs.readdirSync(musicpath);
+		if (musicpath != musicroot)
+		{
+			response.write(libLink('..'));
+		}
+		for (i = 0; i < files.length; i++)
+		{
+			response.write(libLink(files[i]));
+		}
+		response.write("<p><a href = './radio'>Radio stations</a>");
+		response.write(fs.readFileSync('pagebot.html'));
+		response.end();
+	}
+
   function libLink(path) {
 	  var stat = fs.statSync(musicpath + "/" + path);
 	  if (stat.isDirectory())
@@ -28,7 +65,8 @@ function start(route, handle) {
 	  }
 	  else if (/\.mp3$/.test(path))
 	  {
-		  return '<p><a href="./play?file=' + path + '">' + path + '</a>';
+		  return '<p><a href="./play?file=' + path + '">' + 
+					(trackNames[musicpath + '/' + path] || path) + '</a>';
 	  }
 	  else return ""; 
   }
@@ -45,10 +83,6 @@ function start(route, handle) {
 	else if (pathname == '/radio') {
 		radio = true;
 	}
-	else if (pathname == '/cd') {
-		musicpath = fs.realpathSync(musicpath + '/' + requestURL.query.dir);
-		console.log("musicpath = " + musicpath);
-	}
 	else if (pathname == '/play') {
 		route(handle, pathname, musicpath + "/" + requestURL.query.file);
 	}
@@ -58,7 +92,7 @@ function start(route, handle) {
     else if (selectedIndex === undefined) {
 		route(handle, pathname);
 	}
-	else
+	else // '/start' or /stop
 	{
 		// Pass station info to router for supplied index
 		station = stations.list[selectedIndex];
@@ -77,25 +111,28 @@ function start(route, handle) {
 			response.write("href = './start?index=" + index + "'>" + stations.list[index].name + "</a>");
 		}
 		response.write("<p><a href = './library'>Music Library</a>");
+		response.write(fs.readFileSync('pagebot.html'));
+		response.end();
 	} // radio
 	else
 	{	// music library
-		var files = fs.readdirSync(musicpath);
-		if (musicpath != musicroot)
-		{
-			response.write(libLink('..'));
+		if (pathname == '/cd') {
+			musicpath = fs.realpathSync(musicpath + '/' + requestURL.query.dir);
+			// Get id3 tags
+			var cmd = "id3v2 -R " + musicpath.replace(/ /g, "\\ ") + "/*.mp3";
+			exec(cmd, { timeout: 1000 },
+				function (error, stdout, stderr) {
+					// Get title tags for display
+					parseID3(stdout);
+					finishLibPage(response);
+				}
+			);
 		}
-		for (i = 0; i < files.length; i++)
-		{
-			response.write(libLink(files[i]));
+		else {
+			finishLibPage(response);
 		}
-		response.write("<p><a href = './radio'>Radio stations</a>");
 	}
-
-    response.write(fs.readFileSync('pagebot.html'));
-    response.end();
   }
-
   http.createServer(onRequest).listen(8888);
   console.log("Server started.");
 }
