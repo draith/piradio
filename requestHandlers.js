@@ -14,7 +14,7 @@ function stop() {
 
 function play(path) {
 	console.log("Request handler 'play' was called.");
-	omx.start(path, '--vol -500', function() { } );
+	omx.start(path, '--vol -300', function() { } );
 }
 
 function playdir(path) {
@@ -27,7 +27,7 @@ function playdir(path) {
 			plist[plist.length] = path + '/' + files[i];
 		}
 	}
-	omx.play_list(plist, '--vol -500');
+	omx.play_list(plist, '--vol -300');
 }
 
 exports.start = start;

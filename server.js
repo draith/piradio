@@ -52,12 +52,12 @@ function start(route, handle) {
 	  var stat = fs.statSync(musicpath + "/" + path);
 	  if (stat.isDirectory())
 	  {
-		  var result = '<p><a href="./cd?dir=' + path + '">' + path + '</a>';
+		  var result = '<p><a href="./cd?dir=' + encodeURIComponent(path) + '">' + path + '</a>';
 		  var files = fs.readdirSync(musicpath + '/' + path);
  		  for (j = 0; j < files.length; j++)
 		  {
 			if (/\.mp3$/.test(files[j])) {
-				result += '<a href="./playdir?dir=' + path + '"> (Play)</a>';
+				result += '<a href="./playdir?dir=' + encodeURIComponent(path) + '"> (Play)</a>';
 				break;
 			} 
 		  }
@@ -65,7 +65,7 @@ function start(route, handle) {
 	  }
 	  else if (/\.mp3$/.test(path))
 	  {
-		  return '<p><a href="./play?file=' + path + '">' + 
+		  return '<p><a href="./play?file=' + encodeURIComponent(path) + '">' + 
 					(trackNames[musicpath + '/' + path] || path) + '</a>';
 	  }
 	  else return ""; 
@@ -73,7 +73,7 @@ function start(route, handle) {
   
   function escaped(path)
   {
-	  return path.replace(/([ '\(\)])/g, "\\$1");
+	  return path.replace(/([ &'\(\)])/g, "\\$1");
   }
 	// Request handler callback
   function onRequest(request, response) {
@@ -89,10 +89,10 @@ function start(route, handle) {
 		radio = true;
 	}
 	else if (pathname == '/play') {
-		route(handle, pathname, musicpath + "/" + requestURL.query.file);
+		route(handle, pathname, musicpath + "/" + decodeURIComponent(requestURL.query.file));
 	}
 	else if (pathname == '/playdir') {
-		route(handle, pathname, musicpath + "/" + requestURL.query.dir);
+		route(handle, pathname, musicpath + "/" + decodeURIComponent(requestURL.query.dir));
 	}
     else if (selectedIndex === undefined) {
 		route(handle, pathname);
@@ -122,7 +122,9 @@ function start(route, handle) {
 	else
 	{	// music library
 		if (pathname == '/cd') {
-			musicpath = fs.realpathSync(musicpath + '/' + requestURL.query.dir);
+			console.log('/cd :' + requestURL.query.dir);
+			musicpath = fs.realpathSync(musicpath + '/' + decodeURIComponent(requestURL.query.dir));
+			console.log('musicpath = ' + musicpath);
 			// Get id3 tags
 			var cmd = "id3v2 -R " + escaped(musicpath) + "/*.mp3";
 			console.log('ID3 command ' + cmd);
