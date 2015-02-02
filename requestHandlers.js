@@ -17,6 +17,11 @@ function play(path) {
 	omx.start(path, '--vol -300', function() { } );
 }
 
+function pause() {
+	console.log("Request handler 'pause' was called.");
+	omx.pause(function() { console.log('pause executed'); });
+}
+
 function playdir(path) {
 	console.log("Request handler 'playdir' was called.");
 	var files = fs.readdirSync(path);
@@ -34,3 +39,4 @@ exports.start = start;
 exports.stop = stop;
 exports.play = play;
 exports.playdir = playdir;
+exports.pause = pause;

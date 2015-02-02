@@ -95,9 +95,10 @@ function start(route, handle) {
 		route(handle, pathname, musicpath + "/" + decodeURIComponent(requestURL.query.dir));
 	}
     else if (selectedIndex === undefined) {
+		// Catchall..
 		route(handle, pathname);
 	}
-	else // '/start' or /stop
+	else // '/start' 
 	{
 		// Pass station info to router for supplied index
 		station = stations.list[selectedIndex];

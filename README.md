@@ -4,7 +4,7 @@ Node.js-based web application for the Raspberry Pi to play streamed audio and mu
 This uses a variant of the omxcontrol module at https://github.com/rikkertkoppes/omxcontrol, to drive omxplayer
 from a browser interface.
 
-Gotcha:  Won't work properly (stopping/multi-track play) unless stdin is /dev/null.
+NOTE:  Won't work properly (stopping/multi-track play) unless stdin is /dev/null.
 (To run interactively for test/debug: 'node index.js < /dev/null')
 
 To Do:
