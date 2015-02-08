@@ -34,16 +34,18 @@ function parseID3(id3Output) {
 function start(route, handle) {
 	
 	function finishLibPage(response) {
+		response.write("<p><a href = './radio'>Radio stations</a>");
 		var files = fs.readdirSync(musicpath);
 		if (musicpath != musicroot)
 		{
 			response.write(libLink('..'));
 		}
+		response.write('</div>\n<div id=scrolling>');
 		for (i = 0; i < files.length; i++)
 		{
 			response.write(libLink(files[i]));
 		}
-		response.write("<p><a href = './radio'>Radio stations</a>");
+		response.write('</div>');
 		response.write(fs.readFileSync('pagebot.html'));
 		response.end();
 	}
@@ -108,6 +110,8 @@ function start(route, handle) {
     response.writeHead(200, {"Content-Type": "text/html"});
     response.write(fs.readFileSync('pagetop.html'));
 	if (radio) {
+		response.write("<p><a href = './library'>Music Library</a>");
+		response.write('</div>\n<div id=scrolling>');
 		for (index = 0; index < stations.list.length; index++) {
 			// link for each radio station
 			response.write("<p><a ");
@@ -116,7 +120,7 @@ function start(route, handle) {
 			}
 			response.write("href = './start?index=" + index + "'>" + stations.list[index].name + "</a>");
 		}
-		response.write("<p><a href = './library'>Music Library</a>");
+		response.write('</div>');
 		response.write(fs.readFileSync('pagebot.html'));
 		response.end();
 	} // radio

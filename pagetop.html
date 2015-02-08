@@ -1,9 +1,33 @@
 <html>
 <head>
 	<style>
-		a { font: 60px sans-serif; margin : 40px; background-color: rgb(220,255,220); }
+		a { font: 60px sans-serif; margin : 40px; } 
 		a.playing { font: emphasise; background-color: rgb(100,255,100); }
-		a:active { background-color: rgb(120,255,120); }
+		div#scrolling { overflow: auto;  background-color: #cccc99; }
+	    html, body { overflow: hidden; height: 100% }
+        body { margin:0; padding:0; }
+		div#top { background-color: #bdd; border-bottom: solid #bdd }
 	</style>
+	<script>
+	var scrolldiv;
+	var topdiv;
+	function resizeScroller()
+	{
+	   scrolldiv.style.height = window.innerHeight - topdiv.offsetHeight;
+	}
+	function placeScroller()
+	{
+	   topdiv = document.getElementById('top');
+	   scrolldiv = document.getElementById('scrolling');
+	   scrolldiv.style.top = topdiv.offsetHeight + 1;
+	   resizeScroller();
+	}
+	window.onload = placeScroller;
+	window.onresize = resizeScroller;
+	</script>
 </head>
 <body>
+<div id='top'>
+<a href='./'>Refresh</a>
+<a href = './pause'>Pause</a>
+<a href = './stop'>Stop</a>
