@@ -2,9 +2,9 @@ var omx = require('omxcontrol');
 var fs = require('fs');
 var radioOn = true;
 
-function start(url, vol) {
+function start(url, args) {
   console.log("Request handler 'start' was called.");
-	omx.start(url, (vol === undefined ? '' : '--vol ' + vol), function() { } );
+	omx.start(url, (args === undefined ? '' : args), function() { } );
 }
 
 function stop() {
@@ -15,6 +15,11 @@ function stop() {
 function play(path) {
 	console.log("Request handler 'play' was called.");
 	omx.start(path, '--vol -300', function() { } );
+}
+
+function playvid(path) {
+	console.log("Request handler 'playvid' was called.");
+	omx.start(path, '--win "0 0 719 575"', function() { } );
 }
 
 function pause() {
@@ -38,5 +43,6 @@ function playdir(path) {
 exports.start = start;
 exports.stop = stop;
 exports.play = play;
+exports.playvid = playvid;
 exports.playdir = playdir;
 exports.pause = pause;

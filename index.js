@@ -6,6 +6,7 @@ var handle = {};
 handle["/start"] = requestHandlers.start;
 handle["/stop"] = requestHandlers.stop;
 handle["/play"] = requestHandlers.play;
+handle["/playvid"] = requestHandlers.playvid;
 handle["/playdir"] = requestHandlers.playdir;
 handle["/pause"] = requestHandlers.pause;
 

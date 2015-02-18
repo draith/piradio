@@ -6,8 +6,9 @@ var queries;
 var station;
 var selectedIndex;
 var stations = require("./stations");
-var musicpath = "/home/pi/Downloads/Music";
+var musicpath = "/home/pi/library";
 var musicroot = musicpath;
+var rootpath;
 var radio = true;
 var child_process = require('child_process');
 var exec = child_process.exec;
@@ -35,12 +36,19 @@ function start(route, handle) {
 	
 	function finishLibPage(response) {
 		response.write("<p><a href = './radio'>Radio stations</a>");
-		var files = fs.readdirSync(musicpath);
 		if (musicpath != musicroot)
 		{
-			response.write(libLink('..'));
+			response.write("<a href = './library'>Files</a>");
+			if (musicpath != rootpath)
+			{
+				response.write(libLink('..'));
+				console.log('musicpath = ' + musicpath);
+			}
+			var dirName = musicpath.substr(musicpath.lastIndexOf('/')+1);
+			response.write('<p class="title">' + dirName + '</p>');
 		}
 		response.write('</div>\n<div id=scrolling>');
+		var files = fs.readdirSync(musicpath);
 		for (i = 0; i < files.length; i++)
 		{
 			response.write(libLink(files[i]));
@@ -54,7 +62,13 @@ function start(route, handle) {
 	  var stat = fs.statSync(musicpath + "/" + path);
 	  if (stat.isDirectory())
 	  {
-		  var result = '<p><a href="./cd?dir=' + encodeURIComponent(path) + '">' + path + '</a>';
+		  var pathName = path;
+		  if (path == '..')
+		  {
+			  pathName = fs.realpathSync(musicpath + '/' + path);
+			  pathName = pathName.substr(pathName.lastIndexOf('/')+1);
+		  }
+		  var result = '<p><a href="./cd?dir=' + encodeURIComponent(path) + '">' + pathName + '</a>';
 		  var files = fs.readdirSync(musicpath + '/' + path);
  		  for (j = 0; j < files.length; j++)
 		  {
@@ -70,6 +84,12 @@ function start(route, handle) {
 		  return '<p><a href="./play?file=' + encodeURIComponent(path) + '">' + 
 					(trackNames[musicpath + '/' + path] || path) + '</a>';
 	  }
+	  else if (/\.mpg$/.test(path) || /\.mp4$/.test(path))
+	  {
+		  var progName = path.substr(path.lastIndexOf('_')+1);
+		  return '<p><a href="./playvid?file=' + encodeURIComponent(path) + '">' + 
+					progName + '</a>';
+	  }
 	  else return ""; 
   }
   
@@ -81,16 +101,16 @@ function start(route, handle) {
   function onRequest(request, response) {
 	var requestURL = url.parse(request.url,true);
     var pathname = requestURL.pathname;
-    //console.log("Request for path " + pathname + " received.");
     selectedIndex = requestURL.query.index;
-    //console.log("index: ", requestURL.query.index );
 	if (pathname == '/library') {
 		radio = false;
+		musicpath = musicroot;
 	}
 	else if (pathname == '/radio') {
 		radio = true;
 	}
-	else if (pathname == '/play') {
+	else if (pathname == '/play' || pathname == '/playvid') {
+		console.log('query.file = ' + requestURL.query.file);
 		route(handle, pathname, musicpath + "/" + decodeURIComponent(requestURL.query.file));
 	}
 	else if (pathname == '/playdir') {
@@ -110,7 +130,7 @@ function start(route, handle) {
     response.writeHead(200, {"Content-Type": "text/html"});
     response.write(fs.readFileSync('pagetop.html'));
 	if (radio) {
-		response.write("<p><a href = './library'>Music Library</a>");
+		response.write("<p><a href = './library'>Files</a>");
 		response.write('</div>\n<div id=scrolling>');
 		for (index = 0; index < stations.list.length; index++) {
 			// link for each radio station
@@ -128,8 +148,14 @@ function start(route, handle) {
 	{	// music library
 		if (pathname == '/cd') {
 			console.log('/cd :' + requestURL.query.dir);
+			var prevpath = musicpath;
 			musicpath = fs.realpathSync(musicpath + '/' + decodeURIComponent(requestURL.query.dir));
 			console.log('musicpath = ' + musicpath);
+			if (prevpath == musicroot)
+			{
+				rootpath = musicpath;
+				console.log('rootpath = ' + rootpath);
+			}
 			// Get id3 tags
 			var cmd = "id3v2 -R " + escaped(musicpath) + "/*.mp3";
 			console.log('ID3 command ' + cmd);
