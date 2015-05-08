@@ -84,11 +84,16 @@ function start(route, handle) {
 		  return '<p><a href="./play?file=' + encodeURIComponent(path) + '">' + 
 					(trackNames[musicpath + '/' + path] || path) + '</a>';
 	  }
-	  else if (/\.mpg$/.test(path) || /\.mp4$/.test(path))
+	  else if (/\.mpg$/.test(path))
 	  {
 		  var progName = path.substr(path.lastIndexOf('_')+1);
 		  return '<p><a href="./playvid?file=' + encodeURIComponent(path) + '">' + 
 					progName + '</a>';
+	  }
+	  else if (/\.mp4$/.test(path))
+	  {
+		  return '<p><a href="./playvid?file=' + encodeURIComponent(path) + '">' + 
+					path + '</a>';
 	  }
 	  else return ""; 
   }

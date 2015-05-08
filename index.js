@@ -9,5 +9,11 @@ handle["/play"] = requestHandlers.play;
 handle["/playvid"] = requestHandlers.playvid;
 handle["/playdir"] = requestHandlers.playdir;
 handle["/pause"] = requestHandlers.pause;
+handle["/prevch"] = requestHandlers.prevch;
+handle["/nextch"] = requestHandlers.nextch;
+handle["/back30s"] = requestHandlers.back30s;
+handle["/fwd30s"] = requestHandlers.fwd30s;
+handle["/back10m"] = requestHandlers.back10m;
+handle["/fwd10m"] = requestHandlers.fwd10m;
 
 server.start(router.route, handle);
