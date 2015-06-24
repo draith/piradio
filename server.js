@@ -164,7 +164,7 @@ function start(route, handle) {
 			// Get id3 tags
 			var cmd = "id3v2 -R " + escaped(musicpath) + "/*.mp3";
 			console.log('ID3 command ' + cmd);
-			exec(cmd, { timeout: 2000 },
+			exec(cmd, { timeout: 5000 },
 				function (error, stdout, stderr) {
 					// Get title tags for display
 					parseID3(stdout);
