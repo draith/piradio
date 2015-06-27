@@ -1,60 +1,60 @@
-var omx = require('omxcontrol');
+var omx = require('omx-manager');
 var fs = require('fs');
 var radioOn = true;
 
 function start(url, args) {
   console.log("Request handler 'start' was called.");
-	omx.start(url, (args === undefined ? '' : args), function() { } );
+	omx.play(url);
 }
 
 function stop() {
 	console.log("Request handler 'stop' was called.");
-  omx.stop(function() {});
+  omx.stop();
 }
 
 function play(path) {
 	console.log("Request handler 'play' was called.");
-	omx.start(path, '--vol -300', function() { } );
+	omx.play(path,{'-o': 'local', '--vol': '-300'});
 }
 
 function playvid(path) {
 	console.log("Request handler 'playvid' was called.");
-	omx.start(path, '--vol 300', function() { } );
+	omx.play(path,{'-o': 'local', '--vol': '300'});
 }
 
 function pause() {
 	console.log("Request handler 'pause' was called.");
-	omx.pause(function() { console.log('pause executed'); });
+	omx.pause();
 }
 
 function prevch() {
 	console.log("Request handler 'prevch' was called.");
-	omx.prevch(function() { console.log('prevch executed'); });
+	omx.previousChapter();
 }
 
 function nextch() {
 	console.log("Request handler 'nextch' was called.");
-	omx.nextch(function() { console.log('nextch executed'); });
+	omx.nextChapter();
 }
 
 function back30s() {
 	console.log("Request handler 'back30s' was called.");
-	omx.back30s(function() { console.log('back30s executed'); });
+	omx.seekBackward();
 }
 
 function fwd30s() {
 	console.log("Request handler 'fwd30s' was called.");
-	omx.fwd30s(function() { console.log('fwd30s executed'); });
+	omx.seekForward();
 }
 
 function back10m() {
 	console.log("Request handler 'back10m' was called.");
-	omx.back10m(function() { console.log('back10m executed'); });
+	omx.seekFastBackward();
 }
 
 function fwd10m() {
 	console.log("Request handler 'fwd10m' was called.");
-	omx.fwd10m(function() { console.log('fwd10m executed'); });
+	omx.seekFastForward();
 }
 
 function playdir(path) {
@@ -67,7 +67,7 @@ function playdir(path) {
 			plist[plist.length] = path + '/' + files[i];
 		}
 	}
-	omx.play_list(plist, '--vol -300');
+	omx.play(plist,{'-o': 'local', '--vol': '-300'});
 }
 
 exports.start = start;

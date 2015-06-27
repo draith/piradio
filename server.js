@@ -14,6 +14,8 @@ var child_process = require('child_process');
 var exec = child_process.exec;
 var trackNames = [];
 
+// Populates trackNames as map from filename to track title,
+// from id3v2 output.
 function parseID3(id3Output) {
 	var lines = id3Output.split('\n');
 	var filename = false;
@@ -21,10 +23,13 @@ function parseID3(id3Output) {
 	var i;
 	for (i = 0; i < lines.length; i++)
 	{
+		console.log('parseID3: ' + lines[i]);
+		// Get filename from Filename value.
 		if (/^Filename: /.test(lines[i]))
 		{
 			filename = lines[i].substr(10);
 		}
+		// Get track name from TIT2 value.
 		else if (filename && /^TIT2: /.test(lines[i]))
 		{
 			trackNames[filename] = lines[i].substr(6);
@@ -33,20 +38,24 @@ function parseID3(id3Output) {
 }
 
 function start(route, handle) {
-	
 	function finishLibPage(response) {
+		// Display directory links...
 		response.write("<p><a href = './radio'>Radio stations</a>");
 		if (musicpath != musicroot)
 		{
+			// Link to musicroot..
 			response.write("<a href = './library'>Files</a>");
 			if (musicpath != rootpath)
 			{
+				// Not in root - link to parent directory
 				response.write(libLink('..'));
 				console.log('musicpath = ' + musicpath);
 			}
+			// Write title of current directory
 			var dirName = musicpath.substr(musicpath.lastIndexOf('/')+1);
 			response.write('<p class="title">' + dirName + '</p>');
 		}
+		// Display contents of current directory in scrolling div.
 		response.write('</div>\n<div id=scrolling>');
 		var files = fs.readdirSync(musicpath);
 		for (i = 0; i < files.length; i++)
@@ -58,20 +67,26 @@ function start(route, handle) {
 		response.end();
 	}
 
+  // Display title and hyperlink(s) for one item in current directory.
   function libLink(path) {
 	  var stat = fs.statSync(musicpath + "/" + path);
 	  if (stat.isDirectory())
 	  {
+		  // Display directory link(s)
 		  var pathName = path;
 		  if (path == '..')
 		  {
+			  // Parent directory - will display its name instead of '..'
 			  pathName = fs.realpathSync(musicpath + '/' + path);
 			  pathName = pathName.substr(pathName.lastIndexOf('/')+1);
 		  }
+		  // Display directory name in hyperlink to 'cd' to that directory.
 		  var result = '<p><a href="./cd?dir=' + encodeURIComponent(path) + '">' + pathName + '</a>';
+		  // Check for any mp3 files in the directory...
 		  var files = fs.readdirSync(musicpath + '/' + path);
  		  for (j = 0; j < files.length; j++)
 		  {
+			  // If any, include a 'playdir' link, to play all of them.
 			if (/\.mp3$/.test(files[j])) {
 				result += '<a href="./playdir?dir=' + encodeURIComponent(path) + '"> (Play)</a>';
 				break;
@@ -81,27 +96,32 @@ function start(route, handle) {
 	  }
 	  else if (/\.mp3$/.test(path))
 	  {
+		  // MP3 file: display track name (or filename if none) in 'play' hyperlink.
 		  return '<p><a href="./play?file=' + encodeURIComponent(path) + '">' + 
 					(trackNames[musicpath + '/' + path] || path) + '</a>';
 	  }
 	  else if (/\.mpg$/.test(path))
 	  {
+		  // MPG file - extract title from filename format..
 		  var progName = path.substr(path.lastIndexOf('_')+1);
 		  return '<p><a href="./playvid?file=' + encodeURIComponent(path) + '">' + 
 					progName + '</a>';
 	  }
 	  else if (/\.mp4$/.test(path))
 	  {
+		  // MP4 file - display filename.
 		  return '<p><a href="./playvid?file=' + encodeURIComponent(path) + '">' + 
 					path + '</a>';
 	  }
 	  else return ""; 
   }
   
+  // escape path for passing to id3v2 as command-line parameter.
   function escaped(path)
   {
 	  return path.replace(/([ &'\(\)])/g, "\\$1");
   }
+  
 	// Request handler callback
   function onRequest(request, response) {
 	var requestURL = url.parse(request.url,true);
@@ -122,7 +142,7 @@ function start(route, handle) {
 		route(handle, pathname, musicpath + "/" + decodeURIComponent(requestURL.query.dir));
 	}
     else if (selectedIndex === undefined) {
-		// Catchall..
+		// Catch-all..
 		route(handle, pathname);
 	}
 	else // '/start' 
@@ -152,18 +172,14 @@ function start(route, handle) {
 	else
 	{	// music library
 		if (pathname == '/cd') {
-			console.log('/cd :' + requestURL.query.dir);
 			var prevpath = musicpath;
 			musicpath = fs.realpathSync(musicpath + '/' + decodeURIComponent(requestURL.query.dir));
-			console.log('musicpath = ' + musicpath);
 			if (prevpath == musicroot)
 			{
 				rootpath = musicpath;
-				console.log('rootpath = ' + rootpath);
 			}
 			// Get id3 tags
 			var cmd = "id3v2 -R " + escaped(musicpath) + "/*.mp3";
-			console.log('ID3 command ' + cmd);
 			exec(cmd, { timeout: 5000 },
 				function (error, stdout, stderr) {
 					// Get title tags for display
@@ -173,6 +189,7 @@ function start(route, handle) {
 			);
 		}
 		else {
+			// Just refresh the page.
 			finishLibPage(response);
 		}
 	}
