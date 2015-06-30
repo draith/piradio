@@ -23,7 +23,6 @@ function parseID3(id3Output) {
 	var i;
 	for (i = 0; i < lines.length; i++)
 	{
-		console.log('parseID3: ' + lines[i]);
 		// Get filename from Filename value.
 		if (/^Filename: /.test(lines[i]))
 		{
@@ -32,7 +31,29 @@ function parseID3(id3Output) {
 		// Get track name from TIT2 value.
 		else if (filename && /^TIT2: /.test(lines[i]))
 		{
-			trackNames[filename] = lines[i].substr(6);
+			var j = 0;
+			var trackName = lines[i].substr(6);
+			// id3v2 doesn't output non-ASCII tracknames correctly - it masks out
+			// bit 8, resulting in ASCII-fied track names.
+			// Workaround: If the filename contains non-ASCII characters, 
+			// and the returned trackname is found in the ASCII-fied filename,
+			// then use the corresponding part of the (non-ASCII) filename as
+			// the track name.
+			var asciiFilename = '';
+			for (j = 0; j < filename.length; j++)
+			{
+				asciiFilename = asciiFilename + String.fromCharCode(filename.charCodeAt(j) & 0x7f);
+			}
+			if (asciiFilename != filename)
+			{
+				// filename must contain non-ASCII characters..
+				var trackNameOffset = asciiFilename.indexOf(trackName);
+				if (trackNameOffset >= 0)
+				{
+					trackName = filename.substr(trackNameOffset,trackName.length);
+				}
+			}
+			trackNames[filename] = trackName;
 		}
 	}
 }
