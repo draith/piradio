@@ -1,20 +1,42 @@
 var omx = require('omx-manager');
 var fs = require('fs');
+var util = require('util');
 var radioOn = true;
-
-function start(url, args) {
-  console.log("Request handler 'start' was called.");
-	omx.play(url);
-}
+var plist = [];
 
 function stop() {
 	console.log("Request handler 'stop' was called.");
-  omx.stop();
+	console.log("Status = " + util.inspect(omx.getStatus()));
+	plist = [];
+	if (omx.isPlaying())
+	{
+		try
+		{
+			omx.stop();
+		}
+		catch (err)
+		{
+			console.log('Caught error: ' + err.message);
+		}
+	console.log("Status = " + util.inspect(omx.getStatus()));
+	}
+}
+
+function start(url, args) {
+  console.log("Request handler 'start' was called.");
+	plist = [];
+	omx.play(url);
 }
 
 function play(path) {
 	console.log("Request handler 'play' was called.");
 	omx.play(path,{'-o': 'local', '--vol': '-300'});
+}
+
+function playOne(path) {
+	console.log("Request handler 'playOne' was called.");
+	plist = [];
+	play(path);
 }
 
 function playvid(path) {
@@ -24,7 +46,15 @@ function playvid(path) {
 
 function pause() {
 	console.log("Request handler 'pause' was called.");
-	omx.pause();
+	if (omx.isPlaying())
+	{
+		omx.pause();
+	}
+	else
+	{
+		console.log('Not playing: start again.');
+		omx.play();
+	}
 }
 
 function prevch() {
@@ -57,22 +87,31 @@ function fwd10m() {
 	omx.seekFastForward();
 }
 
+function playnext() {
+	console.log('playnext called, plist.length = ' + plist.length);
+	if (plist.length > 0)
+	{
+		play(plist.shift());
+	}
+}
+
 function playdir(path) {
 	console.log("Request handler 'playdir' was called.");
 	var files = fs.readdirSync(path);
-	var plist = [];
 	for (i = 0; i < files.length; i++)
 	{
 		if (/\.mp3$/.test(files[i])) {
 			plist[plist.length] = path + '/' + files[i];
 		}
 	}
-	omx.play(plist,{'-o': 'local', '--vol': '-300'});
+	playnext(plist);
 }
+
+omx.on('end', function() { playnext(); });
 
 exports.start = start;
 exports.stop = stop;
-exports.play = play;
+exports.play = playOne;
 exports.prevch = prevch;
 exports.nextch = nextch;
 exports.back30s = back30s;

@@ -1,6 +1,7 @@
 var server = require("./server");
 var router = require("./router");
 var requestHandlers = require("./requestHandlers");
+var omx = require('omx-manager');
 
 var handle = {};
 handle["/start"] = requestHandlers.start;
@@ -17,3 +18,4 @@ handle["/back10m"] = requestHandlers.back10m;
 handle["/fwd10m"] = requestHandlers.fwd10m;
 
 server.start(router.route, handle);
+//omx.enableHangingHandler();
