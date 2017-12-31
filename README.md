@@ -11,4 +11,4 @@ child_process: To execute shell commands (omxplayer, id3v2, etc.)
 url:   To parse URIs from browser.
 
 To run on startup, add the following line to /etc/rc.local :
-nohup su pi -c 'cd ~/piradio && node index.js > /dev/null 2> piradio.err' &
+`nohup su pi -c 'cd ~/piradio && node index.js > /dev/null 2> piradio.err' &`
